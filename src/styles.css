@@ -91,8 +91,9 @@ img { display: block; }
 }
 @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 .hero-badge {
-  align-self: flex-start; color: #fff; font-size: 12.5px; font-weight: 700;
-  letter-spacing: 0.06em; padding: 4px 11px; border-radius: 6px; text-transform: uppercase;
+  align-self: flex-start; color: #fff; font-size: 12.5px; font-weight: 800;
+  letter-spacing: 0.06em; padding: 5px 12px; border-radius: 6px; text-transform: uppercase;
+  background: var(--grad); box-shadow: 0 4px 16px #e5091455;
 }
 .hero-title { font-size: clamp(34px, 5vw, 62px); font-weight: 800; line-height: 1.04; text-shadow: 0 3px 24px #000c; }
 .hero-meta { display: flex; align-items: center; gap: 14px; font-size: 15px; flex-wrap: wrap; }
@@ -143,12 +144,19 @@ img { display: block; }
   transition: transform 0.22s ease, box-shadow 0.22s ease; transform-origin: center bottom;
 }
 .card:hover { transform: scale(1.13); z-index: 10; box-shadow: 0 14px 42px #000c; }
-.card-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
-.card-platform {
-  position: absolute; top: 8px; left: 8px; width: 22px; height: 22px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px; font-weight: 800; box-shadow: 0 2px 8px #0009;
+.card-poster-wrap { position: relative; }
+.card-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #16161f; }
+.card-free {
+  position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 5px;
+  background: var(--grad); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px #0009;
 }
+.card-play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 34px; color: #fff; opacity: 0; background: #0006; transition: opacity 0.2s;
+  text-shadow: 0 2px 12px #000;
+}
+.card:hover .card-play { opacity: 1; }
 .card-hover {
   position: absolute; inset: auto 0 0 0; padding: 26px 10px 10px;
   background: linear-gradient(180deg, transparent, #000000e8 55%);
@@ -189,7 +197,13 @@ img { display: block; }
 .modal-close:hover { background: var(--accent); }
 .modal-hero { position: relative; aspect-ratio: 16/8; background-size: cover; background-position: center 20%; }
 .modal-hero-shade { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, var(--bg-2)); }
-.modal-title { position: absolute; left: 34px; bottom: 18px; font-size: clamp(26px, 4vw, 44px); font-weight: 800; text-shadow: 0 3px 18px #000; max-width: 85%; }
+.modal-hero { background-color: #16161f; }
+.modal-title { position: absolute; left: 34px; bottom: 18px; font-size: clamp(26px, 4vw, 44px); font-weight: 800; text-shadow: 0 3px 18px #000; max-width: 62%; }
+.modal-hero-play {
+  position: absolute; right: 30px; bottom: 22px; z-index: 3; background: var(--grad); color: #fff;
+  padding: 11px 24px; border-radius: 9px; font-size: 16px; font-weight: 700; box-shadow: 0 6px 22px #e5091466;
+}
+.modal-hero-play:hover { filter: brightness(1.1); }
 .modal-body { padding: 22px 34px 30px; display: flex; flex-direction: column; gap: 16px; }
 .modal-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 15px; }
 .modal-overview { font-size: 16px; line-height: 1.6; color: #d9d9e2; }
@@ -197,6 +211,29 @@ img { display: block; }
 .genre-chip { border: 1px solid #ffffff2e; border-radius: 999px; padding: 5px 13px; font-size: 13px; color: var(--dim); }
 .modal-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
 .modal-note { font-size: 12.5px; color: #71717e; }
+
+/* ---------- Player ---------- */
+.player-backdrop {
+  position: fixed; inset: 0; z-index: 200; background: #000000ee;
+  display: flex; align-items: center; justify-content: center; padding: 3vh 3vw;
+  overflow-y: auto; animation: fade 0.2s ease both;
+}
+.player {
+  width: min(1100px, calc((94vh - 52px) * 1.7778)); background: #000; border-radius: 12px;
+  overflow: hidden; box-shadow: 0 30px 90px #000; animation: rise 0.3s ease both;
+}
+.player-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 12px 16px; background: #0d0d17; border-bottom: 1px solid #ffffff12;
+}
+.player-title { font-weight: 700; font-size: 16px; }
+.player-bar-right { display: flex; align-items: center; gap: 14px; }
+.player-ext { color: var(--dim); font-size: 13.5px; }
+.player-ext:hover { color: #fff; }
+.player-close { width: 34px; height: 34px; border-radius: 999px; background: #ffffff14; color: #fff; font-size: 15px; }
+.player-close:hover { background: var(--accent); }
+.player-frame { position: relative; aspect-ratio: 16/9; background: #000; }
+.player-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 /* ---------- Footer ---------- */
 .footer {

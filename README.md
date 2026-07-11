@@ -1,38 +1,49 @@
 # NeoStream
 
-**One home for Netflix, Prime Video & JioHotstar.**
+**Free movies & shows. Streaming forever. No account, no subscription, no limits.**
 
-NeoStream unifies the catalogs of all three major streaming platforms into a single
-cinematic, Netflix-style experience — browse everything in one place, then play any
-title with one click on the platform that carries it (your subscriptions and accounts
-stay with each provider; NeoStream never touches their streams).
+NeoStream is a Netflix-style streaming platform built entirely on **legal, free,
+public-domain content**. Every title plays right in the browser — real in-app
+video, powered by the [Internet Archive](https://archive.org)'s public film & TV
+collections. 350+ movies and shows, and it will never be taken down, because
+nothing here is pirated.
+
+> **Why not Netflix/Prime/Hotstar content?** Those are copyrighted and paywalled —
+> serving them free would be piracy (illegal, and taken down within days).
+> NeoStream instead unifies the *legitimately free* film world into one
+> cinematic experience you own forever.
 
 ## Features
 
-- **Unified catalog** — 200+ live titles across Netflix, Prime Video and JioHotstar (India),
-  refreshed from JustWatch's public API
-- **Profile gate** — Netflix-style "Who's watching?" screen
-- **Cinematic hero** — auto-rotating featured titles with full-bleed backdrops
-- **Smart rows** — Trending (platform-interleaved), per-platform rows, Top Rated (IMDb 8+), genre rows
-- **Platform filter** — view All / Netflix / Prime Video / JioHotstar only
-- **Movies / TV Shows tabs**, instant **search**, and a persistent **My List** (localStorage)
-- **Detail modal** — backdrop, synopsis, genres, IMDb score, trailer lookup, and a
-  **deep link straight to the title's watch page** on its platform
+- **Real in-app playback** — click Play, the film streams in an embedded player. No redirect, no login.
+- **350+ public-domain titles** across Feature Films, Film Noir, Sci-Fi & Horror, Classic TV, Silent Era, Animation & Comedy
+- **Profile gate**, auto-rotating cinematic hero, Most Watched / Top Rated / per-genre rows
+- **Genre filter**, Movies / TV tabs, instant **search**, persistent **My List**
+- **Detail modal** with synopsis, rating, genres, and one-click Play
 
 ## Run
 
 ```powershell
 npm install
-npm run dev        # http://localhost:5173
+npm run dev            # http://localhost:5173
 ```
 
 ## Refresh the catalog
 
 ```powershell
-npm run catalog    # re-fetches from JustWatch into src/data/catalog.json
+npm run catalog        # re-fetches free titles from the Internet Archive
 ```
+
+## Deploy (GitHub Pages)
+
+```powershell
+$env:GHPAGES="1"; npm run build      # builds with /neostream/ base path
+# then force-push dist/ to the gh-pages branch
+```
+
+Live at **https://ankit-2910.github.io/neostream/**
 
 ## Stack
 
-Vite + React 18, plain CSS. Catalog data via JustWatch public GraphQL (region IN).
-No API keys required.
+Vite + React 18, plain CSS. Catalog & playback via the Internet Archive public API
+(`archive.org/advancedsearch.php` + `/embed/`). No API keys, no backend.

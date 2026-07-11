@@ -1,72 +1,46 @@
 import catalog from "./data/catalog.json";
 
 export const TITLES = catalog.titles;
+export const SOURCE_LABEL = catalog.source;
 
-export const PLATFORMS = {
-  netflix: { name: "Netflix", short: "N", color: "#e50914" },
-  prime: { name: "Prime Video", short: "P", color: "#00a8e1" },
-  hotstar: { name: "JioHotstar", short: "H", color: "#1f80e0" },
-};
-
-export const GENRES = {
-  act: "Action & Adventure",
-  cmy: "Comedy",
-  crm: "Crime",
-  drm: "Drama",
-  fnt: "Fantasy",
-  hrr: "Horror",
-  rma: "Romance",
-  scf: "Sci-Fi",
-  trl: "Thriller",
-  doc: "Documentary",
-  ani: "Animation",
-  fml: "Family",
-  war: "War",
-  hst: "History",
-  msc: "Music",
-  spt: "Sport",
-  wsn: "Western",
-};
-
-export const genreNames = (t) => t.genres.map((g) => GENRES[g]).filter(Boolean);
+// All genres present in the catalog, ordered by how many titles carry them.
+export const GENRES = (() => {
+  const count = {};
+  for (const t of TITLES) for (const g of t.genres) count[g] = (count[g] || 0) + 1;
+  return Object.keys(count).sort((a, b) => count[b] - count[a]);
+})();
 
 export function buildRows(titles) {
   const rows = [];
-  const byRating = [...titles].sort((a, b) => (b.imdb || 0) - (a.imdb || 0));
+  const byDownloads = [...titles].sort((a, b) => b.downloads - a.downloads);
+  const byRating = [...titles].filter((t) => t.rating).sort((a, b) => b.rating - a.rating);
 
-  rows.push({ key: "trending", label: "Trending Now", items: interleave(titles) });
-  for (const [key, p] of Object.entries(PLATFORMS)) {
-    const items = titles.filter((t) => t.platform === key);
-    if (items.length) rows.push({ key, label: `Popular on ${p.name}`, items });
-  }
-  rows.push({ key: "top", label: "Top Rated — IMDb 8+", items: byRating.filter((t) => t.imdb >= 8) });
-  for (const g of ["act", "drm", "cmy", "trl", "scf", "crm", "rma", "fnt", "hrr"]) {
-    const items = titles.filter((t) => t.genres.includes(g));
-    if (items.length >= 6) rows.push({ key: "g-" + g, label: GENRES[g], items });
+  rows.push({ key: "watched", label: "Most Watched", items: byDownloads });
+  if (byRating.length >= 6) rows.push({ key: "top", label: "Top Rated", items: byRating.filter((t) => t.rating >= 4) });
+  for (const g of GENRES) {
+    const items = byDownloads.filter((t) => t.genres.includes(g));
+    if (items.length >= 5) rows.push({ key: "g-" + g, label: g, items });
   }
   return rows.filter((r) => r.items.length >= 4);
 }
 
-// Mix platforms so "Trending" doesn't show one provider block-by-block
-function interleave(titles) {
-  const buckets = Object.keys(PLATFORMS).map((k) => titles.filter((t) => t.platform === k));
-  const out = [];
-  for (let i = 0; i < 20; i++) for (const b of buckets) if (b[i]) out.push(b[i]);
-  return out;
-}
-
 export function pickHeroes(titles) {
-  const good = titles.filter((t) => t.backdrop && t.imdb >= 7.5 && t.overview.length > 60);
-  const perPlatform = Object.keys(PLATFORMS).map((k) => good.filter((t) => t.platform === k).slice(0, 3));
-  const out = [];
-  for (let i = 0; i < 3; i++) for (const b of perPlatform) if (b[i]) out.push(b[i]);
-  return out.slice(0, 7);
+  const good = titles
+    .filter((t) => t.overview.length > 70 && t.poster)
+    .sort((a, b) => b.downloads - a.downloads);
+  // Spread the hero picks across different lead genres so it isn't all one shelf
+  const seenGenre = new Set();
+  const spread = [];
+  const rest = [];
+  for (const t of good) {
+    const g = t.genres[0];
+    if (!seenGenre.has(g)) (seenGenre.add(g), spread.push(t));
+    else rest.push(t);
+  }
+  return [...spread, ...rest].slice(0, 7);
 }
 
-export const trailerUrl = (t) =>
-  t.trailer
-    ? `https://www.youtube.com/watch?v=${t.trailer}`
-    : `https://www.youtube.com/results?search_query=${encodeURIComponent(`${t.title} ${t.year || ""} official trailer`)}`;
+export const ratingStars = (r) => (r ? "★ " + r.toFixed(1) + "/5" : null);
 
 const LIST_KEY = "neostream.mylist";
 export const loadList = () => {

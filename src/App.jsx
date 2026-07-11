@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { TITLES, PLATFORMS, buildRows, pickHeroes, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
+import { TITLES, SOURCE_LABEL, buildRows, pickHeroes, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
 import ProfileGate from "./components/ProfileGate.jsx";
 import Header from "./components/Header.jsx";
 import Hero from "./components/Hero.jsx";
 import Row from "./components/Row.jsx";
 import Grid from "./components/Grid.jsx";
 import DetailModal from "./components/DetailModal.jsx";
+import Player from "./components/Player.jsx";
 
 export default function App() {
   const [profile, setProfile] = useState(loadProfile);
   const [nav, setNav] = useState("home"); // home | movies | shows | mylist
-  const [platform, setPlatform] = useState("all");
+  const [genre, setGenre] = useState("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const [playing, setPlaying] = useState(null);
   const [myList, setMyList] = useState(loadList);
 
   useEffect(() => saveList(myList), [myList]);
@@ -22,11 +24,11 @@ export default function App() {
 
   const pool = useMemo(() => {
     let ts = TITLES;
-    if (platform !== "all") ts = ts.filter((t) => t.platform === platform);
+    if (genre !== "all") ts = ts.filter((t) => t.genres.includes(genre));
     if (nav === "movies") ts = ts.filter((t) => t.type === "movie");
     if (nav === "shows") ts = ts.filter((t) => t.type === "show");
     return ts;
-  }, [platform, nav]);
+  }, [genre, nav]);
 
   const searching = query.trim().length > 0;
   const results = useMemo(() => {
@@ -39,10 +41,9 @@ export default function App() {
   const heroes = useMemo(() => pickHeroes(pool), [pool]);
   const listItems = useMemo(() => TITLES.filter((t) => myList.includes(t.id)), [myList]);
 
-  if (!profile)
-    return <ProfileGate onPick={(p) => (saveProfile(p), setProfile(p))} />;
+  if (!profile) return <ProfileGate onPick={(p) => (saveProfile(p), setProfile(p))} />;
 
-  const common = { onSelect: setSelected, myList, onToggleList: toggleList };
+  const common = { onSelect: setSelected, onPlay: setPlaying, myList, onToggleList: toggleList };
 
   return (
     <div className="app">
@@ -50,8 +51,8 @@ export default function App() {
         profile={profile}
         nav={nav}
         onNav={(n) => (setNav(n), setQuery(""))}
-        platform={platform}
-        onPlatform={setPlatform}
+        genre={genre}
+        onGenre={setGenre}
         query={query}
         onQuery={setQuery}
         onSwitchProfile={() => (clearProfile(), setProfile(null))}
@@ -80,8 +81,8 @@ export default function App() {
       <footer className="footer">
         <span className="brand-mini">NEOSTREAM</span>
         <span>
-          One home for {Object.values(PLATFORMS).map((p) => p.name).join(" · ")}. Catalog via JustWatch —
-          playback happens on each platform.
+          Free, legal streaming — every title plays right here, powered by {SOURCE_LABEL}.
+          No account, no subscription, no limits.
         </span>
       </footer>
 
@@ -89,10 +90,13 @@ export default function App() {
         <DetailModal
           title={selected}
           onClose={() => setSelected(null)}
+          onPlay={(t) => (setSelected(null), setPlaying(t))}
           inList={myList.includes(selected.id)}
           onToggleList={() => toggleList(selected)}
         />
       )}
+
+      {playing && <Player title={playing} onClose={() => setPlaying(null)} />}
     </div>
   );
 }

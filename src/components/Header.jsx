@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PLATFORMS } from "../lib.js";
+import { GENRES } from "../lib.js";
 
 const NAV = [
   ["home", "Home"],
@@ -8,7 +8,7 @@ const NAV = [
   ["mylist", "My List"],
 ];
 
-export default function Header({ profile, nav, onNav, platform, onPlatform, query, onQuery, onSwitchProfile }) {
+export default function Header({ profile, nav, onNav, genre, onGenre, query, onQuery, onSwitchProfile }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24);
@@ -30,17 +30,12 @@ export default function Header({ profile, nav, onNav, platform, onPlatform, quer
       </div>
       <div className="header-right">
         <div className="platform-pills">
-          <button className={platform === "all" ? "pill active" : "pill"} onClick={() => onPlatform("all")}>
-            All
+          <button className={genre === "all" ? "pill active" : "pill"} onClick={() => onGenre("all")}>
+            All Genres
           </button>
-          {Object.entries(PLATFORMS).map(([key, p]) => (
-            <button
-              key={key}
-              className={platform === key ? "pill active" : "pill"}
-              style={platform === key ? { borderColor: p.color, color: "#fff", background: p.color + "33" } : {}}
-              onClick={() => onPlatform(key)}
-            >
-              {p.name}
+          {GENRES.map((g) => (
+            <button key={g} className={genre === g ? "pill active" : "pill"} onClick={() => onGenre(g)}>
+              {g}
             </button>
           ))}
         </div>
