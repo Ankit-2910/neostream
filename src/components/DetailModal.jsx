@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { scoreLabel, watchOptions, primaryAction } from "../lib.js";
+import { scoreLabel, watchOptions, primaryAction, providerLogo } from "../lib.js";
 
 const KIND_LABEL = { free: "Free", sub: "Subscription", rent: "Rent", buy: "Buy" };
 
@@ -60,6 +60,9 @@ export default function DetailModal({ title: t, region, onClose, onPlay, inList,
                 <div className="wtw-chips">
                   {g.offers.map((o, n) => (
                     <a key={g.kind + n} className={"wtw-chip " + g.kind} href={o.url} target="_blank" rel="noreferrer">
+                      {providerLogo(o.provider) && (
+                        <img className="wtw-logo" src={providerLogo(o.provider)} alt="" loading="lazy" />
+                      )}
                       {o.provider}
                       {region === "all" && <span className="wtw-region">{o.region}</span>}
                     </a>

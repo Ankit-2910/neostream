@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { TITLES, buildRows, pickHeroes, eraTest, isFreeIn, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
+import { TITLES, initCatalog, buildRows, pickHeroes, eraTest, isFreeIn, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
 import ProfileGate from "./components/ProfileGate.jsx";
+import Splash from "./components/Splash.jsx";
 import Header from "./components/Header.jsx";
 import Hero from "./components/Hero.jsx";
 import Row from "./components/Row.jsx";
@@ -9,6 +10,8 @@ import DetailModal from "./components/DetailModal.jsx";
 import Player from "./components/Player.jsx";
 
 export default function App() {
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [profile, setProfile] = useState(loadProfile);
   const [nav, setNav] = useState("home");
   const [genre, setGenre] = useState("all");
@@ -18,6 +21,16 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [playing, setPlaying] = useState(null);
   const [myList, setMyList] = useState(loadList);
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}catalog.json`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data) => {
+        initCatalog(data);
+        setLoaded(true);
+      })
+      .catch(() => setLoadError(true));
+  }, []);
 
   useEffect(() => saveList(myList), [myList]);
 
@@ -38,7 +51,7 @@ export default function App() {
     return TITLES.filter(
       (t) => test(t.year) && n015(t) && (genre === "all" || t.genres.includes(genre)) && isFreeIn(t, region)
     );
-  }, [genre, era, nav, region]);
+  }, [genre, era, nav, region, loaded]);
 
   // Search = universal, across the WHOLE index (free + paid), so you can find
   // where to watch anything, not just the free stuff.
@@ -56,12 +69,14 @@ export default function App() {
         return (b.score || 0) - (a.score || 0);
       })
       .slice(0, 120);
-  }, [query, era, nav, region, searching]);
+  }, [query, era, nav, region, searching, loaded]);
 
   const rows = useMemo(() => buildRows(browsePool), [browsePool]);
   const heroes = useMemo(() => pickHeroes(browsePool), [browsePool]);
-  const listItems = useMemo(() => TITLES.filter((t) => myList.includes(t.id)), [myList]);
+  const listItems = useMemo(() => TITLES.filter((t) => myList.includes(t.id)), [myList, loaded]);
 
+  if (loadError) return <Splash error />;
+  if (!loaded) return <Splash />;
   if (!profile) return <ProfileGate onPick={(p) => (saveProfile(p), setProfile(p))} />;
 
   const common = { region, onSelect: setSelected, onPlay: play, myList, onToggleList: toggleList };

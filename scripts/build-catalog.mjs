@@ -10,7 +10,12 @@ import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "src", "data", "catalog.json");
+const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "catalog.json");
+
+// provider clearName -> logo URL (deduped, stored once at top level)
+const providerLogos = {};
+const logoUrl = (icon) =>
+  icon ? "https://images.justwatch.com" + icon.replace("{profile}", "s100").replace("{format}", "png") : null;
 
 /* ------------------------------------------------------------------ */
 /*  1. Internet Archive — in-app playable public-domain classics       */
@@ -88,7 +93,7 @@ query($country: Country!, $first: Int!, $after: String, $filter: TitleFilter) {
         genres { shortName } scoring { imdbScore } backdrops { backdropUrl }
       }
       offers(country: $country, platform: WEB) {
-        monetizationType standardWebURL package { clearName }
+        monetizationType standardWebURL package { clearName icon }
       }
     } } }
   }
@@ -126,8 +131,9 @@ function normJW(node, region) {
   for (const o of node.offers || []) {
     const b = bucket(o.monetizationType);
     if (!b || !o.standardWebURL || !o.package?.clearName) continue;
-    if (!groups[b].has(o.package.clearName))
-      groups[b].set(o.package.clearName, { provider: o.package.clearName, url: o.standardWebURL, region });
+    const name = o.package.clearName;
+    if (!(name in providerLogos)) providerLogos[name] = logoUrl(o.package.icon);
+    if (!groups[b].has(name)) groups[b].set(name, { provider: name, url: o.standardWebURL, region });
   }
   const pick = (b) => [...groups[b].values()];
   return {
@@ -183,10 +189,10 @@ for (const s of IA_SHELVES) {
 // JustWatch: paginate each (country, type). Merge same title across regions.
 const jwByKey = new Map();
 const JW_JOBS = [
-  ["IN", ["MOVIE"], 8],
-  ["IN", ["SHOW"], 6],
-  ["US", ["MOVIE"], 8],
-  ["US", ["SHOW"], 6],
+  ["IN", ["MOVIE"], 22],
+  ["IN", ["SHOW"], 16],
+  ["US", ["MOVIE"], 20],
+  ["US", ["SHOW"], 14],
 ];
 const PAGE = 40;
 for (const [country, types, pages] of JW_JOBS) {
@@ -225,9 +231,9 @@ if (archiveN < 80 || jwN < 300) {
   console.error(`Too few titles (archive ${archiveN}, jw ${jwN}) — refusing to overwrite.`);
   process.exit(1);
 }
-writeFileSync(OUT, JSON.stringify({ generatedAt: new Date().toISOString(), titles }, null, 0));
+writeFileSync(OUT, JSON.stringify({ generatedAt: new Date().toISOString(), providers: providerLogos, titles }, null, 0));
 console.log(`\nWrote ${titles.length} titles: ${archiveN} in-app classics + ${jwN} indexed`);
-console.log(`Free to watch (in-app or free provider): ${freeN}`);
+console.log(`Free to watch (in-app or free provider): ${freeN} · providers with logos: ${Object.values(providerLogos).filter(Boolean).length}`);
 const eras = titles.reduce((a, t) => {
   const d = t.year ? `${Math.floor(t.year / 10) * 10}s` : "?";
   a[d] = (a[d] || 0) + 1;

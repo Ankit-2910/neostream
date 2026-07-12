@@ -1,6 +1,17 @@
-import catalog from "./data/catalog.json";
+// Catalog is fetched at runtime (it's multi-MB) and installed here via initCatalog().
+export let TITLES = [];
+export let GENRES = [];
+export let PROVIDER_LOGOS = {};
 
-export const TITLES = catalog.titles;
+export function initCatalog(data) {
+  TITLES = data.titles || [];
+  PROVIDER_LOGOS = data.providers || {};
+  const count = {};
+  for (const t of TITLES) for (const g of t.genres) count[g] = (count[g] || 0) + 1;
+  GENRES = Object.keys(count).sort((a, b) => count[b] - count[a]);
+}
+
+export const providerLogo = (name) => PROVIDER_LOGOS[name] || null;
 
 export const REGIONS = [
   { key: "IN", label: "India" },
@@ -17,12 +28,6 @@ export const ERAS = [
   { key: "classic", label: "Classics", test: (y) => y && y < 1990 },
 ];
 export const eraTest = (key) => (ERAS.find((e) => e.key === key) || ERAS[0]).test;
-
-export const GENRES = (() => {
-  const count = {};
-  for (const t of TITLES) for (const g of t.genres) count[g] = (count[g] || 0) + 1;
-  return Object.keys(count).sort((a, b) => count[b] - count[a]);
-})();
 
 export const scoreLabel = (t) => (t.score ? "★ " + t.score.toFixed(1) : null);
 
@@ -63,11 +68,12 @@ export function primaryAction(t, region) {
 // Small badge shown on cards.
 export function badgeFor(t, region) {
   if (t.playable) return { text: "▶ FREE", cls: "free" };
-  if (offersFor(t, "free", region).length) return { text: "↗ FREE", cls: "free" };
+  const free = offersFor(t, "free", region)[0];
+  if (free) return { text: "FREE", cls: "free", provider: free.provider };
   const sub = offersFor(t, "sub", region)[0];
-  if (sub) return { text: sub.provider, cls: "sub" };
-  const rent = offersFor(t, "rent", region)[0] || offersFor(t, "buy", region)[0];
-  if (rent) return { text: "Rent / Buy", cls: "paid" };
+  if (sub) return { text: sub.provider, cls: "sub", provider: sub.provider };
+  const paid = offersFor(t, "rent", region)[0] || offersFor(t, "buy", region)[0];
+  if (paid) return { text: "Rent / Buy", cls: "paid", provider: paid.provider };
   return { text: "Where to watch", cls: "paid" };
 }
 
