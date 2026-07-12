@@ -46,9 +46,7 @@ jobs:
           fi
 
       - name: Build site
-        run: npm run build
-        env:
-          GHPAGES: "1"
+        run: npm run build # base "/" for the custom domain neostream.shivanchal.in
 
       - name: Publish to gh-pages
         run: |
