@@ -1,0 +1,64 @@
+name: Refresh catalog & deploy
+
+# Rebuilds NeoStream's catalog from the live JustWatch + Internet Archive APIs
+# and redeploys to GitHub Pages. Runs weekly, or on demand from the Actions tab.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday 06:00 UTC (11:30 IST)
+  workflow_dispatch: {} # Manual "Run workflow" button
+
+permissions:
+  contents: write # push refreshed catalog to main + force-push gh-pages
+
+concurrency:
+  group: neostream-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Rebuild catalog from live APIs
+        run: npm run catalog
+
+      - name: Commit refreshed catalog to main
+        run: |
+          git config user.name "neostream-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add public/catalog.json
+          if git diff --cached --quiet; then
+            echo "Catalog unchanged — nothing to commit."
+          else
+            git commit -m "chore: weekly catalog refresh [skip ci]"
+            git push
+          fi
+
+      - name: Build site
+        run: npm run build
+        env:
+          GHPAGES: "1"
+
+      - name: Publish to gh-pages
+        run: |
+          cd dist
+          touch .nojekyll
+          git init -b gh-pages -q
+          git config user.name "neostream-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Deploy $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
