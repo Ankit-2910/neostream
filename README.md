@@ -10,9 +10,14 @@ NeoStream is a Netflix-style, 100% **legal & free** streaming platform. It's a h
   (ad-supported) on Tubi, Roku Channel, Freevee, Sony LIV, MX Player, Zee5 & more.
   NeoStream lists them with one-click "Watch Free" deep-links (US + India). ~170 titles.
 
+- **Universal "where can I watch it?" search** — search *any* of ~1,150 indexed
+  titles and NeoStream shows every place it streams, **free options first**, then
+  subscription, then rent/buy — each a one-click deep-link. Region-aware (India / US).
+
 Nothing here is pirated, so it can never be taken down. Modern copyrighted content
 (Netflix/Prime/Hotstar originals behind a paywall) is intentionally **not** rehosted —
-that would be piracy. Instead NeoStream surfaces everything you can watch for free, legally.
+that would be piracy. Instead NeoStream plays what's legally free in-app, and for
+everything else tells you exactly where to watch it for the least money.
 
 > **Why not Netflix/Prime/Hotstar content?** Those are copyrighted and paywalled —
 > serving them free would be piracy (illegal, and taken down within days).

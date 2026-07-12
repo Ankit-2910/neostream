@@ -2,6 +2,12 @@ import catalog from "./data/catalog.json";
 
 export const TITLES = catalog.titles;
 
+export const REGIONS = [
+  { key: "IN", label: "India" },
+  { key: "US", label: "US" },
+  { key: "all", label: "All regions" },
+];
+
 export const ERAS = [
   { key: "all", label: "All Years", test: () => true },
   { key: "2020s", label: "2020s", test: (y) => y >= 2020 },
@@ -12,7 +18,6 @@ export const ERAS = [
 ];
 export const eraTest = (key) => (ERAS.find((e) => e.key === key) || ERAS[0]).test;
 
-// Genres present in the catalog, ordered by frequency.
 export const GENRES = (() => {
   const count = {};
   for (const t of TITLES) for (const g of t.genres) count[g] = (count[g] || 0) + 1;
@@ -21,15 +26,60 @@ export const GENRES = (() => {
 
 export const scoreLabel = (t) => (t.score ? "★ " + t.score.toFixed(1) : null);
 
+/* ---- where-to-watch helpers (region-aware) ---- */
+export const offersFor = (t, kind, region) =>
+  (t[kind] || []).filter((o) => region === "all" || o.region === region);
+
+export const isFreeIn = (t, region) => t.playable || offersFor(t, "free", region).length > 0;
+
+export function watchOptions(t, region) {
+  const groups = [
+    { kind: "free", label: "Free", offers: offersFor(t, "free", region) },
+    { kind: "sub", label: "Subscription", offers: offersFor(t, "sub", region) },
+    { kind: "rent", label: "Rent", offers: offersFor(t, "rent", region) },
+    { kind: "buy", label: "Buy", offers: offersFor(t, "buy", region) },
+  ].filter((g) => g.offers.length);
+  // If nothing in the chosen region, fall back to showing all regions
+  if (!groups.length && region !== "all") return watchOptions(t, "all");
+  return groups;
+}
+
+// The primary button: play in-app > free > subscription > rent > buy.
+export function primaryAction(t, region) {
+  if (t.playable) return { mode: "play", label: "▶ Play" };
+  const order = [
+    ["free", (p) => `▶ Watch Free on ${p}`],
+    ["sub", (p) => `Watch on ${p}`],
+    ["rent", (p) => `Rent on ${p}`],
+    ["buy", (p) => `Buy on ${p}`],
+  ];
+  for (const [kind, label] of order) {
+    const o = offersFor(t, kind, region)[0] || (region !== "all" ? (t[kind] || [])[0] : null);
+    if (o) return { mode: "link", label: label(o.provider), url: o.url, provider: o.provider, kind };
+  }
+  return { mode: "none", label: "Not available" };
+}
+
+// Small badge shown on cards.
+export function badgeFor(t, region) {
+  if (t.playable) return { text: "▶ FREE", cls: "free" };
+  if (offersFor(t, "free", region).length) return { text: "↗ FREE", cls: "free" };
+  const sub = offersFor(t, "sub", region)[0];
+  if (sub) return { text: sub.provider, cls: "sub" };
+  const rent = offersFor(t, "rent", region)[0] || offersFor(t, "buy", region)[0];
+  if (rent) return { text: "Rent / Buy", cls: "paid" };
+  return { text: "Where to watch", cls: "paid" };
+}
+
 export function buildRows(titles) {
   const rows = [];
-  const modern = titles.filter((t) => t.source === "external");
+  const modern = titles.filter((t) => t.source === "jw");
   const classics = titles.filter((t) => t.source === "archive");
   const byScore = (arr) => [...arr].sort((a, b) => (b.score || 0) - (a.score || 0));
   const byPop = (arr) => [...arr].sort((a, b) => b.downloads - a.downloads);
 
-  const fresh = modern.filter((t) => t.year >= 2018);
-  if (fresh.length >= 4) rows.push({ key: "new", label: "New & Free — 2018 onward", items: byScore(fresh) });
+  const fresh = modern.filter((t) => t.year >= 2020);
+  if (fresh.length >= 4) rows.push({ key: "new", label: "New & Free — 2020s", items: byScore(fresh) });
   if (modern.length >= 4) rows.push({ key: "freehub", label: "Free to Watch Now", items: byScore(modern) });
   if (classics.length >= 4) rows.push({ key: "classics", label: "▶ Plays In-App — Public-Domain Classics", items: byPop(classics) });
 
@@ -44,13 +94,12 @@ export function buildRows(titles) {
 }
 
 export function pickHeroes(titles) {
-  // Prefer modern titles with real backdrops for the hero; fall back to classics.
   const good = titles
     .filter((t) => t.overview.length > 70 && t.backdrop)
     .sort((a, b) => {
-      const am = a.source === "external" ? 1 : 0;
-      const bm = b.source === "external" ? 1 : 0;
-      if (am !== bm) return bm - am; // modern first
+      const am = a.source === "jw" ? 1 : 0;
+      const bm = b.source === "jw" ? 1 : 0;
+      if (am !== bm) return bm - am;
       return (b.score || 0) - (a.score || 0);
     });
   const seen = new Set();

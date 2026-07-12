@@ -1,16 +1,13 @@
-import { scoreLabel } from "../lib.js";
+import { scoreLabel, badgeFor } from "../lib.js";
 
-export default function Card({ title: t, onSelect, myList, onToggleList }) {
+export default function Card({ title: t, region, onSelect, myList, onToggleList }) {
   const inList = myList.includes(t.id);
+  const badge = badgeFor(t, region);
   return (
     <div className="card" onClick={() => onSelect(t)}>
       <div className="card-poster-wrap">
         <img className="card-poster" src={t.poster} alt={t.title} loading="lazy" />
-        {t.playable ? (
-          <span className="card-free">▶ FREE</span>
-        ) : (
-          <span className="card-free ext" title={`Free on ${t.provider}`}>↗ {t.provider}</span>
-        )}
+        <span className={"card-free " + badge.cls} title={t.title}>{badge.text}</span>
         <span className="card-play">{t.playable ? "▶" : "↗"}</span>
       </div>
       <div className="card-hover">

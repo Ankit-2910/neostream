@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { TITLES, buildRows, pickHeroes, eraTest, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
+import { TITLES, buildRows, pickHeroes, eraTest, isFreeIn, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
 import ProfileGate from "./components/ProfileGate.jsx";
 import Header from "./components/Header.jsx";
 import Hero from "./components/Hero.jsx";
@@ -10,9 +10,10 @@ import Player from "./components/Player.jsx";
 
 export default function App() {
   const [profile, setProfile] = useState(loadProfile);
-  const [nav, setNav] = useState("home"); // home | movies | shows | mylist
+  const [nav, setNav] = useState("home");
   const [genre, setGenre] = useState("all");
   const [era, setEra] = useState("all");
+  const [region, setRegion] = useState("IN");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [playing, setPlaying] = useState(null);
@@ -23,35 +24,47 @@ export default function App() {
   const toggleList = (t) =>
     setMyList((ids) => (ids.includes(t.id) ? ids.filter((i) => i !== t.id) : [...ids, t.id]));
 
-  // In-app titles open the Player; external free titles open the provider in a new tab.
+  // In-app titles open the Player; everything else opens its best provider link.
   const play = (t) => {
-    if (t.playable) setPlaying(t);
-    else window.open(t.watchUrl, "_blank", "noopener,noreferrer");
+    if (t.playable) return setPlaying(t);
+    setSelected(t); // no embed → open the detail modal's "Where to watch"
   };
 
-  const pool = useMemo(() => {
-    const test = eraTest(era);
-    let ts = TITLES.filter((t) => test(t.year));
-    if (genre !== "all") ts = ts.filter((t) => t.genres.includes(genre));
-    if (nav === "movies") ts = ts.filter((t) => t.type === "movie");
-    if (nav === "shows") ts = ts.filter((t) => t.type === "show");
-    return ts;
-  }, [genre, era, nav]);
+  const n015 = (t) => (nav === "movies" ? t.type === "movie" : nav === "shows" ? t.type === "show" : true);
 
+  // Browse = free-to-watch only (in-app classics + free/ads modern), filtered.
+  const browsePool = useMemo(() => {
+    const test = eraTest(era);
+    return TITLES.filter(
+      (t) => test(t.year) && n015(t) && (genre === "all" || t.genres.includes(genre)) && isFreeIn(t, region)
+    );
+  }, [genre, era, nav, region]);
+
+  // Search = universal, across the WHOLE index (free + paid), so you can find
+  // where to watch anything, not just the free stuff.
   const searching = query.trim().length > 0;
   const results = useMemo(() => {
     if (!searching) return [];
     const q = query.trim().toLowerCase();
-    return pool.filter((t) => t.title.toLowerCase().includes(q));
-  }, [query, pool, searching]);
+    const test = eraTest(era);
+    return TITLES.filter((t) => t.title.toLowerCase().includes(q) && test(t.year) && n015(t))
+      .sort((a, b) => {
+        // free first, then by score
+        const af = isFreeIn(a, region) ? 1 : 0;
+        const bf = isFreeIn(b, region) ? 1 : 0;
+        if (af !== bf) return bf - af;
+        return (b.score || 0) - (a.score || 0);
+      })
+      .slice(0, 120);
+  }, [query, era, nav, region, searching]);
 
-  const rows = useMemo(() => buildRows(pool), [pool]);
-  const heroes = useMemo(() => pickHeroes(pool), [pool]);
+  const rows = useMemo(() => buildRows(browsePool), [browsePool]);
+  const heroes = useMemo(() => pickHeroes(browsePool), [browsePool]);
   const listItems = useMemo(() => TITLES.filter((t) => myList.includes(t.id)), [myList]);
 
   if (!profile) return <ProfileGate onPick={(p) => (saveProfile(p), setProfile(p))} />;
 
-  const common = { onSelect: setSelected, onPlay: play, myList, onToggleList: toggleList };
+  const common = { region, onSelect: setSelected, onPlay: play, myList, onToggleList: toggleList };
 
   return (
     <div className="app">
@@ -63,13 +76,15 @@ export default function App() {
         onGenre={setGenre}
         era={era}
         onEra={setEra}
+        region={region}
+        onRegion={setRegion}
         query={query}
         onQuery={setQuery}
         onSwitchProfile={() => (clearProfile(), setProfile(null))}
       />
 
       {searching ? (
-        <Grid title={`Results for “${query.trim()}”`} items={results} {...common} />
+        <Grid title={`Where to watch “${query.trim()}”`} items={results} {...common} />
       ) : nav === "mylist" ? (
         <Grid
           title="My List"
@@ -78,7 +93,7 @@ export default function App() {
           {...common}
         />
       ) : rows.length === 0 ? (
-        <Grid title="Nothing here" items={[]} empty="No titles match these filters. Try widening the year or genre." {...common} />
+        <Grid title="Nothing here" items={[]} empty="No free titles match these filters. Try widening the year, genre, or region." {...common} />
       ) : (
         <>
           {heroes.length > 0 && <Hero heroes={heroes} {...common} />}
@@ -93,16 +108,17 @@ export default function App() {
       <footer className="footer">
         <span className="brand-mini">NEOSTREAM</span>
         <span>
-          Free & legal streaming. Classics play in-app (Internet Archive); modern titles open free
-          with ads on Tubi, Roku, Sony LIV & more. No subscription, ever.
+          Free & legal streaming, plus a universal “where can I watch it?” search across every
+          service. Classics play in-app; everything else links you to the cheapest legal option — free first.
         </span>
       </footer>
 
       {selected && (
         <DetailModal
           title={selected}
+          region={region}
           onClose={() => setSelected(null)}
-          onPlay={(t) => (setSelected(null), play(t))}
+          onPlay={(t) => (t.playable ? (setSelected(null), setPlaying(t)) : null)}
           inList={myList.includes(selected.id)}
           onToggleList={() => toggleList(selected)}
         />

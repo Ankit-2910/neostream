@@ -157,7 +157,8 @@ img { display: block; }
   background: var(--grad); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.03em;
   box-shadow: 0 2px 8px #0009; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.card-free.ext { background: #0d0d17d9; border: 1px solid #ffffff33; font-weight: 700; }
+.card-free.sub { background: #1f6fe0ea; box-shadow: 0 2px 8px #0009; }
+.card-free.paid { background: #0d0d17e0; border: 1px solid #ffffff33; color: #d2d2de; font-weight: 700; }
 .card-play {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-size: 34px; color: #fff; opacity: 0; background: #0006; transition: opacity 0.2s;
@@ -216,6 +217,28 @@ img { display: block; }
 .modal-overview { font-size: 16px; line-height: 1.6; color: #d9d9e2; }
 .modal-genres { display: flex; gap: 8px; flex-wrap: wrap; }
 .genre-chip { border: 1px solid #ffffff2e; border-radius: 999px; padding: 5px 13px; font-size: 13px; color: var(--dim); }
+/* Where to watch */
+.wtw { border-top: 1px solid #ffffff14; padding-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.wtw-title { font-size: 15px; font-weight: 700; letter-spacing: 0.02em; color: #e8e8ef; }
+.wtw-group { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.wtw-kind {
+  flex: 0 0 96px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  padding-top: 7px; color: var(--dim);
+}
+.wtw-kind.free { color: #43d17a; }
+.wtw-kind.sub { color: #5aa2ff; }
+.wtw-chips { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.wtw-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 8px;
+  font-size: 13.5px; font-weight: 600; border: 1px solid #ffffff22; background: #ffffff10; color: #fff;
+  transition: all 0.15s; cursor: pointer;
+}
+.wtw-chip:hover { border-color: #ffffff66; background: #ffffff1e; transform: translateY(-1px); }
+.wtw-chip.free { border-color: #43d17a66; background: #43d17a1f; color: #d6ffe6; }
+.wtw-chip.free:hover { background: #43d17a33; }
+.wtw-chip.sub { border-color: #5aa2ff55; background: #5aa2ff1c; }
+.wtw-region { font-size: 10px; font-weight: 700; opacity: 0.6; border: 1px solid currentColor; border-radius: 4px; padding: 0 4px; }
+
 .modal-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
 .modal-note { font-size: 12.5px; color: #71717e; }
 
@@ -253,14 +276,22 @@ img { display: block; }
 }
 
 /* ---------- Responsive ---------- */
+@media (max-width: 1200px) {
+  .era-pills { display: none; }
+}
 @media (max-width: 900px) {
   .platform-pills { display: none; }
+  .genre-select.region { display: none; }
   .nav button { padding: 6px 8px; font-size: 14px; }
-  .search { width: 130px; }
+  .search { width: 140px; }
   .hero-content { bottom: 12vh; }
+  .wtw-kind { flex-basis: 100%; padding-top: 0; }
 }
 @media (max-width: 600px) {
   .nav { display: none; }
+  .genre-select { max-width: 96px; }
   .card { flex-basis: 124px; }
   .hero { height: 74vh; }
+  .modal-title { max-width: 100%; font-size: 24px; }
+  .modal-hero-play { position: static; margin: 12px 30px 0; align-self: flex-start; }
 }

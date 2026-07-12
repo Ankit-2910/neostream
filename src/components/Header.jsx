@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GENRES, ERAS } from "../lib.js";
+import { GENRES, ERAS, REGIONS } from "../lib.js";
 
 const NAV = [
   ["home", "Home"],
@@ -8,7 +8,7 @@ const NAV = [
   ["mylist", "My List"],
 ];
 
-export default function Header({ profile, nav, onNav, genre, onGenre, era, onEra, query, onQuery, onSwitchProfile }) {
+export default function Header({ profile, nav, onNav, genre, onGenre, era, onEra, region, onRegion, query, onQuery, onSwitchProfile }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24);
@@ -42,9 +42,14 @@ export default function Header({ profile, nav, onNav, genre, onGenre, era, onEra
             <option key={g} value={g}>{g}</option>
           ))}
         </select>
+        <select className="genre-select region" value={region} onChange={(e) => onRegion(e.target.value)} title="Region for where-to-watch">
+          {REGIONS.map((r) => (
+            <option key={r.key} value={r.key}>{r.label}</option>
+          ))}
+        </select>
         <input
           className="search"
-          placeholder="Search…"
+          placeholder="Search any title…"
           value={query}
           onChange={(e) => onQuery(e.target.value)}
         />

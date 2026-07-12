@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { scoreLabel } from "../lib.js";
+import { scoreLabel, primaryAction } from "../lib.js";
 
-export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList }) {
+export default function Hero({ heroes, region, onPlay, onSelect, myList, onToggleList }) {
   const [i, setI] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setI((n) => (n + 1) % heroes.length), 7000);
@@ -10,6 +10,7 @@ export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList })
 
   const t = heroes[Math.min(i, heroes.length - 1)];
   const inList = myList.includes(t.id);
+  const action = primaryAction(t, region);
 
   return (
     <section className="hero">
@@ -24,7 +25,7 @@ export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList })
       )}
       <div className="hero-shade" />
       <div className="hero-content" key={t.id}>
-        <span className="hero-badge">{t.playable ? "▶ Plays Free Here" : `↗ Free on ${t.provider}`}</span>
+        <span className="hero-badge">{t.playable ? "▶ Plays Free Here" : "▶ Free to Stream"}</span>
         <h1 className="hero-title">{t.title}</h1>
         <div className="hero-meta">
           {scoreLabel(t) && <span className="imdb">{scoreLabel(t)}</span>}
@@ -34,12 +35,8 @@ export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList })
         </div>
         <p className="hero-overview">{t.overview}</p>
         <div className="hero-actions">
-          <button className="btn btn-play" onClick={() => onPlay(t)}>
-            {t.playable ? "▶ Play" : `▶ Watch Free on ${t.provider}`}
-          </button>
-          <button className="btn btn-ghost" onClick={() => onSelect(t)}>
-            ⓘ More Info
-          </button>
+          <button className="btn btn-play" onClick={() => onPlay(t)}>{action.label}</button>
+          <button className="btn btn-ghost" onClick={() => onSelect(t)}>ⓘ More Info</button>
           <button className="btn btn-ghost round" title={inList ? "Remove from My List" : "Add to My List"} onClick={() => onToggleList(t)}>
             {inList ? "✓" : "+"}
           </button>
