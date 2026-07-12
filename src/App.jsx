@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { TITLES, SOURCE_LABEL, buildRows, pickHeroes, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
+import { TITLES, buildRows, pickHeroes, eraTest, loadList, saveList, loadProfile, saveProfile, clearProfile } from "./lib.js";
 import ProfileGate from "./components/ProfileGate.jsx";
 import Header from "./components/Header.jsx";
 import Hero from "./components/Hero.jsx";
@@ -12,6 +12,7 @@ export default function App() {
   const [profile, setProfile] = useState(loadProfile);
   const [nav, setNav] = useState("home"); // home | movies | shows | mylist
   const [genre, setGenre] = useState("all");
+  const [era, setEra] = useState("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [playing, setPlaying] = useState(null);
@@ -22,13 +23,20 @@ export default function App() {
   const toggleList = (t) =>
     setMyList((ids) => (ids.includes(t.id) ? ids.filter((i) => i !== t.id) : [...ids, t.id]));
 
+  // In-app titles open the Player; external free titles open the provider in a new tab.
+  const play = (t) => {
+    if (t.playable) setPlaying(t);
+    else window.open(t.watchUrl, "_blank", "noopener,noreferrer");
+  };
+
   const pool = useMemo(() => {
-    let ts = TITLES;
+    const test = eraTest(era);
+    let ts = TITLES.filter((t) => test(t.year));
     if (genre !== "all") ts = ts.filter((t) => t.genres.includes(genre));
     if (nav === "movies") ts = ts.filter((t) => t.type === "movie");
     if (nav === "shows") ts = ts.filter((t) => t.type === "show");
     return ts;
-  }, [genre, nav]);
+  }, [genre, era, nav]);
 
   const searching = query.trim().length > 0;
   const results = useMemo(() => {
@@ -43,7 +51,7 @@ export default function App() {
 
   if (!profile) return <ProfileGate onPick={(p) => (saveProfile(p), setProfile(p))} />;
 
-  const common = { onSelect: setSelected, onPlay: setPlaying, myList, onToggleList: toggleList };
+  const common = { onSelect: setSelected, onPlay: play, myList, onToggleList: toggleList };
 
   return (
     <div className="app">
@@ -53,6 +61,8 @@ export default function App() {
         onNav={(n) => (setNav(n), setQuery(""))}
         genre={genre}
         onGenre={setGenre}
+        era={era}
+        onEra={setEra}
         query={query}
         onQuery={setQuery}
         onSwitchProfile={() => (clearProfile(), setProfile(null))}
@@ -67,6 +77,8 @@ export default function App() {
           empty="Your list is empty. Hover any title and hit + to save it here."
           {...common}
         />
+      ) : rows.length === 0 ? (
+        <Grid title="Nothing here" items={[]} empty="No titles match these filters. Try widening the year or genre." {...common} />
       ) : (
         <>
           {heroes.length > 0 && <Hero heroes={heroes} {...common} />}
@@ -81,8 +93,8 @@ export default function App() {
       <footer className="footer">
         <span className="brand-mini">NEOSTREAM</span>
         <span>
-          Free, legal streaming — every title plays right here, powered by {SOURCE_LABEL}.
-          No account, no subscription, no limits.
+          Free & legal streaming. Classics play in-app (Internet Archive); modern titles open free
+          with ads on Tubi, Roku, Sony LIV & more. No subscription, ever.
         </span>
       </footer>
 
@@ -90,7 +102,7 @@ export default function App() {
         <DetailModal
           title={selected}
           onClose={() => setSelected(null)}
-          onPlay={(t) => (setSelected(null), setPlaying(t))}
+          onPlay={(t) => (setSelected(null), play(t))}
           inList={myList.includes(selected.id)}
           onToggleList={() => toggleList(selected)}
         />

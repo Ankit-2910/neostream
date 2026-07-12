@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "catalog": "node scripts/fetch-free-catalog.mjs"
+    "catalog": "node scripts/build-catalog.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

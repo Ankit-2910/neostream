@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GENRES } from "../lib.js";
+import { GENRES, ERAS } from "../lib.js";
 
 const NAV = [
   ["home", "Home"],
@@ -8,7 +8,7 @@ const NAV = [
   ["mylist", "My List"],
 ];
 
-export default function Header({ profile, nav, onNav, genre, onGenre, query, onQuery, onSwitchProfile }) {
+export default function Header({ profile, nav, onNav, genre, onGenre, era, onEra, query, onQuery, onSwitchProfile }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 24);
@@ -29,19 +29,22 @@ export default function Header({ profile, nav, onNav, genre, onGenre, query, onQ
         </nav>
       </div>
       <div className="header-right">
-        <div className="platform-pills">
-          <button className={genre === "all" ? "pill active" : "pill"} onClick={() => onGenre("all")}>
-            All Genres
-          </button>
-          {GENRES.map((g) => (
-            <button key={g} className={genre === g ? "pill active" : "pill"} onClick={() => onGenre(g)}>
-              {g}
+        <div className="era-pills">
+          {ERAS.map((e) => (
+            <button key={e.key} className={era === e.key ? "pill active" : "pill"} onClick={() => onEra(e.key)}>
+              {e.label}
             </button>
           ))}
         </div>
+        <select className="genre-select" value={genre} onChange={(e) => onGenre(e.target.value)}>
+          <option value="all">All Genres</option>
+          {GENRES.map((g) => (
+            <option key={g} value={g}>{g}</option>
+          ))}
+        </select>
         <input
           className="search"
-          placeholder="Search titles…"
+          placeholder="Search…"
           value={query}
           onChange={(e) => onQuery(e.target.value)}
         />

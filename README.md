@@ -2,11 +2,17 @@
 
 **Free movies & shows. Streaming forever. No account, no subscription, no limits.**
 
-NeoStream is a Netflix-style streaming platform built entirely on **legal, free,
-public-domain content**. Every title plays right in the browser — real in-app
-video, powered by the [Internet Archive](https://archive.org)'s public film & TV
-collections. 350+ movies and shows, and it will never be taken down, because
-nothing here is pirated.
+NeoStream is a Netflix-style, 100% **legal & free** streaming platform. It's a hybrid:
+
+- **Classics play right in the browser** — real in-app video from the
+  [Internet Archive](https://archive.org)'s public-domain film & TV collections (~300 titles).
+- **Modern titles (1990–2026)** are the movies & shows that are legitimately free
+  (ad-supported) on Tubi, Roku Channel, Freevee, Sony LIV, MX Player, Zee5 & more.
+  NeoStream lists them with one-click "Watch Free" deep-links (US + India). ~170 titles.
+
+Nothing here is pirated, so it can never be taken down. Modern copyrighted content
+(Netflix/Prime/Hotstar originals behind a paywall) is intentionally **not** rehosted —
+that would be piracy. Instead NeoStream surfaces everything you can watch for free, legally.
 
 > **Why not Netflix/Prime/Hotstar content?** Those are copyrighted and paywalled —
 > serving them free would be piracy (illegal, and taken down within days).

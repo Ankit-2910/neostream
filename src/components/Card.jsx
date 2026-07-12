@@ -1,4 +1,4 @@
-import { ratingStars } from "../lib.js";
+import { scoreLabel } from "../lib.js";
 
 export default function Card({ title: t, onSelect, myList, onToggleList }) {
   const inList = myList.includes(t.id);
@@ -6,13 +6,17 @@ export default function Card({ title: t, onSelect, myList, onToggleList }) {
     <div className="card" onClick={() => onSelect(t)}>
       <div className="card-poster-wrap">
         <img className="card-poster" src={t.poster} alt={t.title} loading="lazy" />
-        <span className="card-free">FREE</span>
-        <span className="card-play">▶</span>
+        {t.playable ? (
+          <span className="card-free">▶ FREE</span>
+        ) : (
+          <span className="card-free ext" title={`Free on ${t.provider}`}>↗ {t.provider}</span>
+        )}
+        <span className="card-play">{t.playable ? "▶" : "↗"}</span>
       </div>
       <div className="card-hover">
         <div className="card-title">{t.title}</div>
         <div className="card-meta">
-          {t.rating && <span className="imdb">{ratingStars(t.rating)}</span>}
+          {scoreLabel(t) && <span className="imdb">{scoreLabel(t)}</span>}
           {t.year && <span>{t.year}</span>}
         </div>
         <button

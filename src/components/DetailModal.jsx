@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ratingStars, SOURCE_LABEL } from "../lib.js";
+import { scoreLabel } from "../lib.js";
 
 export default function DetailModal({ title: t, onClose, onPlay, inList, onToggleList }) {
   useEffect(() => {
@@ -12,38 +12,48 @@ export default function DetailModal({ title: t, onClose, onPlay, inList, onToggl
     };
   }, [onClose]);
 
+  const regions = t.regions?.length ? t.regions.join(" / ") : null;
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
-        <div className="modal-hero" style={{ backgroundImage: `url(${t.poster})` }}>
+        <div className="modal-hero" style={{ backgroundImage: `url(${t.backdrop})` }}>
           <div className="modal-hero-shade" />
           <h2 className="modal-title">{t.title}</h2>
-          <button className="modal-hero-play" onClick={() => onPlay(t)}>▶ Play</button>
+          <button className="modal-hero-play" onClick={() => onPlay(t)}>
+            {t.playable ? "▶ Play" : "▶ Watch Free"}
+          </button>
         </div>
         <div className="modal-body">
           <div className="modal-meta">
-            <span className="hero-badge">▶ Free</span>
-            {t.rating && <span className="imdb">{ratingStars(t.rating)}</span>}
+            <span className="hero-badge">{t.playable ? "▶ Free" : "↗ Free"}</span>
+            {scoreLabel(t) && <span className="imdb">{scoreLabel(t)}</span>}
             {t.year && <span>{t.year}</span>}
             <span className="cap">{t.type === "movie" ? "Movie" : "Series"}</span>
           </div>
-          <p className="modal-overview">{t.overview || "No synopsis available for this public-domain title."}</p>
+          <p className="modal-overview">{t.overview || "No synopsis available."}</p>
           <div className="modal-genres">
             {t.genres.map((g) => (
               <span key={g} className="genre-chip">{g}</span>
             ))}
           </div>
           <div className="modal-actions">
-            <button className="btn btn-play" onClick={() => onPlay(t)}>▶ Play Now</button>
+            <button className="btn btn-play" onClick={() => onPlay(t)}>
+              {t.playable ? "▶ Play Now" : `▶ Watch Free on ${t.provider}`}
+            </button>
             <button className="btn btn-ghost" onClick={onToggleList}>
               {inList ? "✓ In My List" : "+ My List"}
             </button>
-            <a className="btn btn-ghost" href={t.watchUrl} target="_blank" rel="noreferrer">
-              Open on Archive ↗
-            </a>
           </div>
-          <p className="modal-note">Streams free & legally from {SOURCE_LABEL} — no account, no subscription, ever.</p>
+          {t.playable ? (
+            <p className="modal-note">Streams free & legally in your browser from the Internet Archive — no account, ever.</p>
+          ) : (
+            <p className="modal-note">
+              Free (ad-supported) on <b>{t.offers.map((o) => o.provider).filter((v, i, a) => a.indexOf(v) === i).join(", ")}</b>
+              {regions ? ` · available in ${regions}` : ""}. Opens on the provider — no subscription needed.
+            </p>
+          )}
         </div>
       </div>
     </div>

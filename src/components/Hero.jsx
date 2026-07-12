@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ratingStars } from "../lib.js";
+import { scoreLabel } from "../lib.js";
 
 export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList }) {
   const [i, setI] = useState(0);
@@ -18,16 +18,16 @@ export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList })
           <div
             key={h.id}
             className={"hero-bg" + (n === i ? " on" : "")}
-            style={{ backgroundImage: `url(${h.poster})` }}
+            style={{ backgroundImage: `url(${h.backdrop})` }}
           />
         ) : null
       )}
       <div className="hero-shade" />
       <div className="hero-content" key={t.id}>
-        <span className="hero-badge">▶ Free to Stream</span>
+        <span className="hero-badge">{t.playable ? "▶ Plays Free Here" : `↗ Free on ${t.provider}`}</span>
         <h1 className="hero-title">{t.title}</h1>
         <div className="hero-meta">
-          {t.rating && <span className="imdb">{ratingStars(t.rating)}</span>}
+          {scoreLabel(t) && <span className="imdb">{scoreLabel(t)}</span>}
           {t.year && <span>{t.year}</span>}
           <span className="cap">{t.type === "movie" ? "Movie" : "Series"}</span>
           <span className="dim">{t.genres.slice(0, 3).join(" · ")}</span>
@@ -35,7 +35,7 @@ export default function Hero({ heroes, onPlay, onSelect, myList, onToggleList })
         <p className="hero-overview">{t.overview}</p>
         <div className="hero-actions">
           <button className="btn btn-play" onClick={() => onPlay(t)}>
-            ▶ Play
+            {t.playable ? "▶ Play" : `▶ Watch Free on ${t.provider}`}
           </button>
           <button className="btn btn-ghost" onClick={() => onSelect(t)}>
             ⓘ More Info

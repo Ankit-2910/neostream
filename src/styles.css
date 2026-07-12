@@ -58,7 +58,13 @@ img { display: block; }
 .nav button { padding: 7px 12px; border-radius: 8px; color: var(--dim); font-size: 15px; }
 .nav button:hover { color: var(--text); }
 .nav button.active { color: var(--text); background: #ffffff14; font-weight: 600; }
-.platform-pills { display: flex; gap: 6px; }
+.platform-pills, .era-pills { display: flex; gap: 6px; }
+.genre-select {
+  background: #ffffff12; border: 1px solid #ffffff24; border-radius: 8px; color: var(--text);
+  padding: 7px 10px; font: inherit; font-size: 13.5px; outline: none; cursor: pointer; max-width: 140px;
+}
+.genre-select:focus { border-color: #ffffff77; }
+.genre-select option { background: #14141f; color: var(--text); }
 .pill {
   padding: 6px 13px; border-radius: 999px; border: 1px solid #ffffff2b;
   color: var(--dim); font-size: 13.5px; white-space: nowrap; transition: all 0.15s;
@@ -147,10 +153,11 @@ img { display: block; }
 .card-poster-wrap { position: relative; }
 .card-poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #16161f; }
 .card-free {
-  position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 5px;
-  background: var(--grad); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em;
-  box-shadow: 0 2px 8px #0009;
+  position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 5px; max-width: calc(100% - 16px);
+  background: var(--grad); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.03em;
+  box-shadow: 0 2px 8px #0009; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.card-free.ext { background: #0d0d17d9; border: 1px solid #ffffff33; font-weight: 700; }
 .card-play {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-size: 34px; color: #fff; opacity: 0; background: #0006; transition: opacity 0.2s;
